@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Hide Folders
+.DS_Store
+.texpadtmp

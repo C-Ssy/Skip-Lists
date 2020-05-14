@@ -1,0 +1,73 @@
+\documentclass[12pt]{beamer}
+%-------------------------
+%\usepackage{hyperref}
+%\usepackage{fontawesome}
+%\usepackage{graphicx}
+%\usepackage{color}
+%\usepackage[english]{babel}
+%\usepackage{listings}
+\usepackage{cite}
+%\usepackage{FiraSans} 
+%--------------------------
+\usetheme[titleformat=regular, numbering=fraction,  subsectionpage=progressbar, progressbar=head]{metropolis}
+
+\title{Skip Lists}\date{\today} 
+\author{Jie Zhu, Jingwen Pu, Chuanyang Cheng}\institute{Chollege of Computer and Technology, Zhejiang University} 
+\begin{document}
+\maketitle
+\bibliographystyle{unsrt}
+\begin{frame}{Outline}
+	\tableofcontents
+\end{frame}
+\section{Introduction} 
+\begin{frame}{Definition}
+A skip list is a data structure that allows $O(n)$ search complexity as well as $O(\log n)$ insertion complexity within an ordered sequence of $n$ elements. \cite{pugh1990skip}
+\end{frame}
+\begin{frame}{Complexity in Big-O Notation}
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+Algorithm & Average & Worst Case \\
+\hline
+Space & $O(n)$ & $O(n\log n)$\cite{papadakis1993skip} \\
+\hline
+Search & $O(n\log n)$ & $O(n)$\cite{papadakis1993skip} \\
+\hline
+Insert & $O(\log n)$ & $O(n)$ \\ 
+\hline
+Delete & $O(\log n)$ & $O(n)$ \\
+\hline
+\end{tabular}
+\end{table}
+\end{frame}
+\section{Implement}
+\begin{frame}{Data Structure Definition}
+	\begin{columns}
+		\column{0.5\textwidth}
+		\begin{itemize}
+			\item fda
+			\item da
+			\item jop
+		\end{itemize}
+		\column{0.5\textwidth}
+		\begin{enumerate}
+			\item dsa
+			\item jll;
+			\item dkal
+		\end{enumerate}
+	\end{columns}
+\end{frame}
+\subsection{Search}
+\begin{frame}{Search}
+
+\end{frame}
+\subsection{Insert}
+\subsection{Delete}
+\section{Complexity Analysis}
+
+\begin{frame}{References}
+	\bibliography{ref.bib}
+\end{frame}
+\begin{frame}[standout]Thank you! 
+\end{frame}
+\end{document}
