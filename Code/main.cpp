@@ -1,7 +1,9 @@
 #include <iostream>
+#include <random>
 
-int main(int argc, char const *argv[])
+int main()
 {
-    std::cout << "Hello, world!";
+
+
     return 0;
 }
