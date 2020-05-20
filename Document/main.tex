@@ -1,12 +1,5 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Template for lab reports used at STIMA
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Sets the document class for the document
-% Openany is added to remove the book style of starting every new chapter on an odd page (not needed for reports)
 \documentclass[10pt,english, openany]{book}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Loading packages that alter the style
 \usepackage[]{graphicx}
 \usepackage[]{color}
 \usepackage{alltt}
@@ -76,11 +69,10 @@
 
 	% Titles
 	% Information about the University
-	{\normalsize Fluidodinamica Computazionale \\ 
-		Dipartimento di Scienze e Tecnologie Aerospaziali \\
-		Politecnico di Milano \par}
+	{\normalsize School of Computer Science and Technology \\ 
+	Zhejiang University \par}
 		\vspace{3cm}
-	{\Huge \textbf{TITLE OF PROJECT}} \\
+	{\Huge \textbf{Skip List}} \\
 	%\vspace{1cm}
 	%{\large \textbf{xxxxx} \par}
 	\vspace{4cm}
@@ -94,7 +86,7 @@
     \vspace{0.5cm}
 		
 	% Set the date
-	{\normalsize dd-mm-yyyy \par}
+	{\normalsize 2020-05-20 \par}
 	
 	\pagebreak
 
@@ -124,12 +116,35 @@
 \section{Mesh generation and description}
 \section{Numerical schemes}
 
-\chapter{Results}\label{chapt:results}
-[\textit{ Report the results of the simulations. Validate your work, i.e. show that the computational model (\ref{chapt:model}) and the simulations you run (the DoE \ref{chapt:doe}) were able to obtain the goal of the project}]
-\section{Test 1}
-\subsection{Grid convergence}
-% \section{Test 2} ... as needed
+\chapter{Complexity Analysis}
+\section{The Total Result}
+We give the results of the complexity analysis without proof, and then we will give our analysis.
 
+As we can see, 
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\textbf{Algorithm} & \textbf{Average} & \textbf{Worst Case} \\
+\hline
+Space & $O(n)$ & $O(n\log n)$ \\
+\hline
+Search & $O(\log n)$ & $O(n)$\\
+\hline
+Insert & $O(\log n)$ & $O(n)$ \\ 
+\hline
+Delete & $O(\log n)$ & $O(n)$ \\
+\hline
+\end{tabular}
+\caption{The Result}
+\end{table}
+\section{Related Definitinos}
+In order to better analyze the complexity through mathematical means, we will introduce some related concepts in advance, which will help us simplify the analysis
+\subsection{$C_m^n$}
+\section{Space Complexcity}
+Every time a number is inserted, the program will randomly assign a height for node to storage pointer (less than MaxHeight), so it’s Space Complexity is $O(n)$
+\section{Average Time Complexity}
+\subsubsection{Definitions}
+The height of the PSL is expected to be about $log_{\frac{1}{P}}N$. Since, among all elements that made it to a certain level, about every (1/P)th element will make it to the next higher level, one should expect to make 1/p key comparisons per level. Therefore, one should expect about 1/p*log1/p n key comparisons in total, when searching for +∞. As it will turn out (Theorem 3.3), this is exactly the leading term in the search cost for +∞ in a PSL of n keys.
 \chapter{Conclusions}
 
 \pagebreak
