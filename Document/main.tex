@@ -2,6 +2,12 @@
 \documentclass[10pt,english, openany]{book}
 \usepackage[]{graphicx}
 \usepackage[]{color}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}} 
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
 \usepackage{alltt}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -11,7 +17,7 @@
 \setlength{\parindent}{0pt}
 
 % Set page margins
-\usepackage[top=100pt,bottom=100pt,left=68pt,right=66pt]{geometry}
+\usepackage[top=100pt,bottom=100pt,left=100pt,right=100pt]{geometry}
 
 % Package used for placeholder text
 \usepackage{lipsum}
@@ -100,12 +106,130 @@
 %%%%% Text body starts here!
 \mainmatter
 
-\chapter{Summary}\label{chapt:sum}
-[\textit{Briefly describe the goal of the project.}]
-\chapter{Problem definition and background}
-[\textit{Introduce the problem and state the objective of your work. Briefly present the state of the art regarding the chosen topic and report a reference solution (i.e. numerical or experimental, or the exact one if available).}]
-\section{Literature review}
-\section{Reference solution}
+\chapter{Introduction}
+\textit{Skip list} is a data structure that allows $\mathcal O(\log n)$ search complexity as well as $\mathcal O(\log n)$ insertion complexity within an ordered sequence of $n$ elements. Thus it can get the best features of an array while maintaining a linked list-like structure that allows insertion, which is not possible in an array. 
+
+Fast search is made possible by maintaining a linked hierarchy of subsequences, with each successive subsequence skipping over fewer elements than the previous one. 
+
+Searching starts in the sparsest subsequence until two consecutive elements have been found, one smaller and one larger than or equal to the element searched for. Via the linked hierarchy, these two elements link to elements of the next sparsest subsequence, where searching is continued until finally we are searching in the full sequence.
+\vspace{2cm}
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale = 0.4]{Figures/Linked_Lists}
+	\caption{Linked Lists with Additional Pointers}
+\end{figure}
+\chapter{Algorithm Specification}
+\section{Data Structures}
+\subsection{\texttt{class Node}}
+\subsection{\texttt{class SkipList}}
+\section{Main Operations}
+\subsection{Search}
+We search for an element by traversing forward pointers that do not overshoot the node containing the element being searched for. When no more progress can be made at the current level of forward pointers, the search moves down to the next level. When we can make no more progress at level 1, we must be immediately in front of the node that contains the desired element(it it is in the list).
+\begin{algorithm}
+\caption{Search(list, searchKey)}	
+\begin{algorithmic}[1]
+	 \Require Slip list, search key
+	 \Ensure required value
+	 \State x:=list$\rightarrow$header
+	 \State --loop invariant: x$\rightarrow$key
+	 \For {i:=list$\rightarrow$level \textbf{downto} 1}
+	 \While {x$\rightarrow$forward[i]$\rightarrow$key $<$ searchKey}
+	 \State i:=list$\rightarrow$forward[i]
+	 \EndWhile
+	 \EndFor
+	 \State x:=x$\rightarrow$forward[1]
+	 \If {x$\rightarrow$key = searchKey} 
+	 \State \Return {x$\rightarrow$value} 
+	 \EndIf
+	 \State \Return \textit{failure}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Insert}
+\subsubsection{Generate Random Level}
+Initially, we discussed a probability distribution where half of the nodes that have level $i$ pointers also have level $i+1$ pointers. To get away from magic constants, we say that a fraction $p$ of the nodes with level $i$ pointers also have level $i+1$ pointers. Levels are generated randomly by an algorithm, without reeference to the number of elements in the list.
+\begin{algorithm}[htb]
+\caption{RandomLevel()}	
+\begin{algorithmic}[1]
+	 \Require
+	 \Ensure
+	 \State newLevel:=1
+	 \State --random()returns a random value in [0, 1)
+	 \While {random() $<$ p}
+	 \State newLevel:=newLevel + 1
+	 \EndWhile
+	 \State \Return min(newLevel, MaxLevel)
+\end{algorithmic}
+\end{algorithm}
+\subsubsection{Insert Value}
+
+\begin{algorithm}[htb]
+\caption{Insert(list, searchKey, newValue)}	
+\begin{algorithmic}[1]
+	 \Require
+	 \Ensure
+	 \State \textbf{local} update[1...MaxLevel]
+	 \For { i:=list$\rightarrow$level \textbf{downto} 1} 
+	 \While {x$\rightarrow$forward[i]$\rightarrow$key $<$ searchKey}
+	 \State x:=x$\rightarrow$forward[i]
+	 \State --x$\rightarrow$key $<$ searchKey $\leq$ x$\rightarrow$forward[1]$\rightarrow$key
+	 \EndWhile
+	 \State update[i]:=x
+	 \EndFor
+	 \State x:=x$\rightarrow$forward[1]
+	 \If { x$\rightarrow$key = searchKey }
+	 \State x$\rightarrow$value:=newValue
+	 \Else
+	 \State newLevel:=RandomLevel()
+	 \If {newLevel $>$ list$\rightarrow$level }
+	 \For {i:=list$\rightarrow$level+1 \textbf{to} newLevel}
+	 \State update[i]:=list$\rightarrow$header
+	 \EndFor
+	 \State list$\rightarrow$level:=newLevel
+	 \EndIf
+	 \State x:=makeNode(newLevel, searchKey, value)
+	 \For {i:=1 \textbf{to} newLevel}
+	 \State x$\rightarrow$forward[i]:=update[i]$\rightarrow$forward[i]
+	 \State update[i]$\rightarrow$forward[i]:=x
+	 \EndFor
+	 \EndIf
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Delete}
+
+\begin{algorithm}
+\caption{Delete(list, searchKey, newValue)}	
+\begin{algorithmic}[1]
+	 \Require
+	 \Ensure
+	 \State \textbf{local} update[1...MaxLevel]
+	 \State x:=list$\rightarrow$header
+	 \For { i:=list$\rightarrow$level \textbf{downto} 1} 
+	 \While {x$\rightarrow$forward[i]$\rightarrow$key $<$ searchKey}
+	 \State x:=x$\rightarrow$forward[i]
+	 \EndWhile
+	 \State update[i]:=x
+	 \EndFor
+	 \State x:=x$\rightarrow$forward[1]
+	 \If { x$\rightarrow$key = searchKey }
+	 \For {i:=1 \textbf{to} list$\rightarrow$level}
+	 \If{update[i]$\rightarrow$forward[i] $\neq$ x}
+	 \State \textbf{break}
+	 \EndIf
+	 \State update[i]$\rightarrow$forward[i]:=x$\rightarrow$forward[i]
+	 \EndFor
+	 \State free(x)
+	 \While {list$\rightarrow$level $>$ 1 \textbf{and} list$\rightarrow$header$\rightarrow$forward[list$\rightarrow$level] = NIL}
+	 \State list$\rightarrow$level:=list$\rightarrow$level-1
+	 \EndWhile
+	 \EndIf
+\end{algorithmic}
+\end{algorithm}
+
+\section{Main Function}
+
+
 
 \chapter{Design of Experiment}\label{chapt:doe}
 [\textit{Describe the process used to meet the project goal.}]
