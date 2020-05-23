@@ -1,8 +1,9 @@
 #include "SkipList.hpp"
 
-Node::Node(int key, unsigned int level)
+Node::Node(int key, int value, unsigned int level)
 {
     this->key = key;
+    this->value = value;
     this->level = level;
     this->forward = new Node *[level + 1];
     memset(forward, 0, sizeof(Node *) * (level + 1));
@@ -15,18 +16,12 @@ Node::~Node()
     delete[] forward;
 }
 
-NodeWithUpdate::~NodeWithUpdate()
-{
-    delete [] update;
-    delete [] current;
-}
-
 SkipList::SkipList(int maxLevel, float p)
 {
     this->maxLevel = maxLevel;
     this->p = p;
     currentLevel = 0;
-    header = new Node(-1, maxLevel);
+    header = new Node(-1, 0, maxLevel);
 }
 
 unsigned int SkipList::RandomLevel() const
@@ -47,11 +42,11 @@ unsigned int SkipList::RandomLevel() const
     return level;
 }
 
-bool SkipList::InsertKey(int key)
+bool SkipList::InsertKey(int key, int value)
 {
     Node *currentNode = header;
     Node **update = new Node *[maxLevel + 1];
-    for (unsigned int i = currentLevel; i >= 0; --i)
+    for (unsigned int i = currentLevel; i != 0xFFFFFFFF; --i)
     {
         while (currentNode->forward[i] != nullptr &&
                currentNode->forward[i]->key < key)
@@ -65,9 +60,11 @@ bool SkipList::InsertKey(int key)
        insert key.
     */
     currentNode = currentNode->forward[0];
-    if (currentNode and currentNode->key != key)
+    // 如果节点不存在或节点的 key 值不对
+    if (!currentNode or currentNode->key != key)
     {
         unsigned int randomLevel = RandomLevel();
+        // std::cout << randomLevel;
         if (randomLevel > currentLevel)
         {
             for (unsigned int i = currentLevel + 1; i < randomLevel + 1; i++)
@@ -77,7 +74,7 @@ bool SkipList::InsertKey(int key)
             // Update the list current level
             currentLevel = randomLevel;
         }
-        Node *newNode = new Node(key, randomLevel);
+        Node *newNode = new Node(key, value, randomLevel);
         // insert node by rearranging pointers
         for (unsigned int i = 0; i <= randomLevel; i++)
         {
@@ -87,6 +84,7 @@ bool SkipList::InsertKey(int key)
         delete[]update;
         return true;
     }
+    // currentNode->value = value;
 
     return false;
 }
@@ -94,7 +92,7 @@ bool SkipList::InsertKey(int key)
 bool SkipList::FindKey(int key)
 {
     Node *currentNode = header;
-    for (unsigned int i = currentLevel; i >= 0; --i)
+    for (unsigned int i = currentLevel; i != 0xFFFFFFFF; --i)
     {
         // 下一个节点的值小于待寻找的key，则继续前进
         while (currentNode->forward[i] and currentNode->forward[i]->key < key)
@@ -113,7 +111,7 @@ bool SkipList::DeleteKey(int key)
 {
     Node *currentNode = header;
     Node **update = new Node *[currentLevel + 1];
-    for (unsigned int i = currentLevel; i >= 0; --i)
+    for (unsigned int i = currentLevel; i != 0xFFFFFFFF; --i)
     {
         while (currentNode->forward[i] != nullptr &&
                currentNode->forward[i]->key < key)
@@ -127,7 +125,7 @@ bool SkipList::DeleteKey(int key)
     // 如果目前的节点就是目标节点
     if (currentNode and currentNode->key == key)
     {
-        for (int i = 0; i <= currentLevel; ++i)
+        for (unsigned int i = 0; i <= currentLevel; ++i)
         {
             if (update[i]->forward[i] != currentNode)
             {
@@ -149,6 +147,7 @@ void SkipList::PrintSkipList()
          currentNode != nullptr; currentNode = currentNode->forward[0])
     {
         std::cout << "Key is " << currentNode->key << std::endl;
+        std::cout << "Value is " << currentNode->value << std::endl;
         std::cout << "Level is " << currentNode->level << std::endl;
         std::cout << "############" << std::endl;
     }
