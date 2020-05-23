@@ -34,3 +34,7 @@
 # Hide Folders
 .DS_Store
 .texpadtmp
+
+# Clion
+.idea
+cmake-build-debug
