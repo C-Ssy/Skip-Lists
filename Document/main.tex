@@ -7,10 +7,10 @@
 \usepackage{amsmath}
 \renewcommand{\algorithmicrequire}{\textbf{Input:}} 
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
-
+\usepackage{listings}
 \usepackage{alltt}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
+% \usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc}
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}
 \setlength{\parskip}{\smallskipamount}
@@ -60,6 +60,36 @@
 % Separates the first part of the report/thesis in Roman numerals
 \frontmatter
 
+\lstset{
+ % backgroundcolor=\color{lightgray}, 
+ basicstyle = \footnotesize,       
+ breakatwhitespace = false,        
+ breaklines = true,                 
+ captionpos = b,
+ columns=fixed,                    
+ commentstyle = \ttfamily,
+ extendedchars = false,             
+ frame=lrtb, 
+ % framerule=0.5pt,
+ keepspaces=true,
+ keywordstyle=\bfseries, % keyword style
+ language = C++,          
+ otherkeywords={string}, 
+ numbers=left, 
+ numbersep=5pt,
+ xleftmargin=5em,
+ xrightmargin=10em,
+ % numberstyle=\tiny\color{mygray},
+ rulecolor=\color{black},         
+ showspaces=false,  
+ showstringspaces=false, 
+ showtabs=false,    
+ stepnumber=1,         
+ stringstyle=\color{mymauve}, % string literal style
+ tabsize=2,          
+ % title=\lstname                      
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Starts the document
 \begin{document}
@@ -77,18 +107,27 @@
 	% Information about the University
 	{\normalsize School of Computer Science and Technology \\ 
 	Zhejiang University \par}
-		\vspace{3cm}
+	\vspace{1cm}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics{Figures/ZJDX}
+	\end{figure}	
+	\vspace{1cm}
+		
 	{\Huge \textbf{Skip List}} \\
 	%\vspace{1cm}
 	%{\large \textbf{xxxxx} \par}
-	\vspace{4cm}
+	\vspace{3cm}
 	{\normalsize FIRST LAST \\ % \\ specifies a new line
 	             FIRST LAST \\
 	             FIRST LAST\par}
-	\vspace{5cm}
-    
-    \centering \includegraphics[scale=0.4]{logo1.pdf}
-    
+	\vspace{2cm}
+    \begin{figure}[h]
+    	\centering 
+    	\includegraphics{Figures/QSY}
+    \end{figure}
+       
     \vspace{0.5cm}
 		
 	% Set the date
@@ -120,8 +159,76 @@ Searching starts in the sparsest subsequence until two consecutive elements have
 \end{figure}
 \chapter{Algorithm Specification}
 \section{Data Structures}
-\subsection{\texttt{class Node}}
-\subsection{\texttt{class SkipList}}
+\subsection{Node}
+To implement a skiplist, we should first define a Node class, this class contains the following elements:
+\begin{enumerate}
+	\item key: the key of a node
+	\item value: the data of the node
+	\item level: A level i node carries i forward pointers indexed through 0 to i.
+	\item forward: store all pointers
+\end{enumerate}
+
+\begin{lstlisting}
+class Node
+{
+private:
+    
+    int key;
+    
+    int value;
+    
+    unsigned int level;
+    
+    Node **forward;
+
+    friend class SkipList;
+
+public:
+    Node(int key, int value, unsigned int level);
+
+    ~Node();
+};
+\end{lstlisting}
+\subsection{SkipList}
+To implement skip list, we define a class which contains all 
+\begin{enumerate}
+	\item maxLevel: Maximum level for this skip list
+	\item currentLevel: current level of skip list
+	\item header: pointer to header node
+	\item p: probability
+\end{enumerate}
+\begin{enumerate}
+	\item \texttt{RandomLevel()}: Generate a random level 
+	\item \texttt{InsertKey(int key, int value)}: Insert a value in key
+	\item \texttt{FindKey(int key)}: 
+\end{enumerate}
+\begin{lstlisting}
+class SkipList
+{
+private:
+
+    unsigned int maxLevel;
+    
+    unsigned int currentLevel;
+
+    Node *header;
+ 
+    float p;
+
+    [[nodiscard]] unsigned int RandomLevel() const;
+
+public:
+    explicit SkipList(int maxLevel = 3, float p = 0.5);
+
+    bool InsertKey(int key, int value);
+
+    bool FindKey(int key);
+
+    bool DeleteKey(int key);
+
+    void PrintSkipList();
+};
+\end{lstlisting}
 \section{Main Operations}
 \subsection{Search}
 We search for an element by traversing forward pointers that do not overshoot the node containing the element being searched for. When no more progress can be made at the current level of forward pointers, the search moves down to the next level. When we can make no more progress at level 1, we must be immediately in front of the node that contains the desired element(it it is in the list).
@@ -132,8 +239,7 @@ We search for an element by traversing forward pointers that do not overshoot th
 	 \Ensure required value
 	 \State x:=list$\rightarrow$header
 	 \State --loop invariant: x$\rightarrow$key
-	 \For {i:=list$\rightarrow$level \textbf{downto} 1}
-	 \While {x$\rightarrow$forward[i]$\rightarrow$key $<$ searchKey}
+	 \For{i:=list$\rightarrow$level \textbf{downto} 1}	 \While {x$\rightarrow$forward[i]$\rightarrow$key $<$ searchKey}
 	 \State i:=list$\rightarrow$forward[i]
 	 \EndWhile
 	 \EndFor
@@ -162,7 +268,15 @@ Initially, we discussed a probability distribution where half of the nodes that 
 \end{algorithmic}
 \end{algorithm}
 \subsubsection{Insert Value}
+To insert or delete a node, we simply search and splice. A vector $update$ is maintained sp that when the search is compelete, $update[i]$ contains a pointer to the rightmost node of level $i$ or higher that is to the left of the location of the insert/delete.
 
+If an insertion generates a node with a level greater than the previous maximum level of the list, we update the maximum level of the list and initialize the appropriate portions of the update vector. After each deletion, we check to see if we have deleted the maximum element of the list and if so, decrease the maximum level of the list.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{Figures/Insertion}
+	\caption{Pictorial Description of Steps Involved in Performing an Insertion}
+\end{figure}
 \begin{algorithm}[htb]
 \caption{Insert(list, searchKey, newValue)}	
 \begin{algorithmic}[1]
@@ -231,45 +345,43 @@ Initially, we discussed a probability distribution where half of the nodes that 
 
 
 
-\chapter{Design of Experiment}\label{chapt:doe}
-[\textit{Describe the process used to meet the project goal.}]
-
-\chapter{Computational model}\label{chapt:model}
-[\textit{Describe thoroughly the computational model/s used in the project}]
-\section{Problem geometry and setup}
-\section{Mesh generation and description}
-\section{Numerical schemes}
-
+\chapter{Testing Result}
 \chapter{Complexity Analysis}
-\section{The Total Result}
-We give the results of the complexity analysis without proof, and then we will give our analysis.
+The time required to excute the \texttt{Search}, \texttt{Delete} and \texttt{Insert} operation is domained by the time required to search for the appropriate element. For the \texttt{Insert} and \texttt{Delete} operations, there is an additional cost proporational to the level of the node being inserted or deleted. The time required to find an element is proportional to the length of the search path, which is determined by the pattern in which elements with different levels appears as we traverse the list.
+\section{Probablistic Philosophy}
+The structure of a skip list is determined only by the number of elements in the skip list and the results of consulting the random number generator. The sequence of operations that produced the current skip list does not matter. 
 
-As we can see, 
-\begin{table}[h]
-\centering
-\begin{tabular}{ccc}
-\textbf{Algorithm} & \textbf{Average} & \textbf{Worst Case} \\
-\hline
-Space & $O(n)$ & $O(n\log n)$ \\
-\hline
-Search & $O(\log n)$ & $O(n)$\\
-\hline
-Insert & $O(\log n)$ & $O(n)$ \\ 
-\hline
-Delete & $O(\log n)$ & $O(n)$ \\
-\hline
-\end{tabular}
-\caption{The Result}
-\end{table}
-\section{Related Definitinos}
-In order to better analyze the complexity through mathematical means, we will introduce some related concepts in advance, which will help us simplify the analysis
-\subsection{$C_m^n$}
-\section{Space Complexcity}
-Every time a number is inserted, the program will randomly assign a height for node to storage pointer (less than MaxHeight), so it’s Space Complexity is $O(n)$
-\section{Average Time Complexity}
-\subsubsection{Definitions}
-The height of the PSL is expected to be about $log_{\frac{1}{P}}N$. Since, among all elements that made it to a certain level, about every (1/P)th element will make it to the next higher level, one should expect to make 1/p key comparisons per level. Therefore, one should expect about 1/p*log1/p n key comparisons in total, when searching for +∞. As it will turn out (Theorem 3.3), this is exactly the leading term in the search cost for +∞ in a PSL of n keys.
-\chapter{Conclusions}
+We assume an adversarial user does not have access to the levels of nodes; otherwise, he could create situations with worst-case running times by deleting all nodes that were not level 1. 
+
+The probabilities of poor running times for successive operations on the same data structure are NOT independent; two successive searches for the same element will both take exactly the same time.
+\section{Time Complextiy}
+\subsection{Definition}
+The height of the PSL is expected to be about log1/P n. Since, among all elements that made it to a certain level, about every (1/P)th element will make it to the next higher level, one should expect to make 1/p key comparisons per level. Therefore, one should expect about 1/p*log1/p n key comparisons in total, when searching for +∞. As it will turn out (Theorem 3.3), this is exactly the leading term in the search cost for $+\infty$ in a PSL of n keys.
+\subsection{Search Cost}
+We divide the steps on the search path into vertical steps (that is, one less than $T_n$) and horizontal steps( $L_{m-1}$ : number of full horizontal steps on the search path for the $(m-1)^{st}$ key)
+\[
+E\left(C_{n}^{(m)}\right)=E\left(T_{n}\right)+E\left(L_{m-1}\right)
+\]
+
+$E(T_n)$: random variables following the geometric distribution
+\[
+E\left(T_{n}\right)=\sum_{k \geq 1}\left\{k\left(\left(1-p^{k}\right)^{n}-\left(1-p^{k-1}\right)^{n}\right)\right\}=\sum_{k \geq 1}\left\{1-\left(1-p^{k-1}\right)^{n}\right\}
+\]
+$E(L_{m-1})$
+
+\[
+E\left(L_{m-1}\right)=\left\{\begin{array}{ll}
+1+\frac{q}{p} \sum_{j=1}^{m-2} \sum_{k \geq 1} p^{k}\left(1-p^{k}\right)^{j} & \text { if } m=2,3, \ldots, n+1 \\
+0 & \text { if } m=1
+\end{array}\right.
+\]
+At any particular point in the climb, we are at a situation similar to situation a . We are at the ith forward pointer of a node x and we have no knowledge about the levels of nodes to the left of x or about the level of x, other than that the level of x must be at least i. Assume the x is not the header (this is equivalent to assuming the list extends infinitely to the left). If the level of x is equal to i, then we are in situation b. If the level of x is greater than i, then we are in situation c. The probability that we are in situation c is p. Each time we are in situation c, we climb up a level. We use C(k) denotes the expected cost ( length) of a search path that climbs up k levels.
+
+An upper bound of C(k) = (L(n) - 1)/p. Because L(n) = log1/p n and p = 1/2, we can get the conclusion that C(k) = 2 * log2 n - 2 = O(log2 n)
+\subsection{Insert/Delete Cost}
+The Insert and Delete Algorithms are built on the Search Algorithm. After finding the position needed to insert or delete a node, the time complexity of other steps are smaller than $\mathcal O(\log n)$. So we can make a conclusion that the Insert and Delete Algorithms are both $\mathcal O(\log n)$.
+\section{Space Complexity}
+Every time a number is inserted, the program will randomly assign a height for node to storage pointer (less than MaxHeight), so it’s Space Complexity is $\mathcal O(n)$
 
 \pagebreak
 
@@ -282,10 +394,14 @@ The height of the PSL is expected to be about $log_{\frac{1}{P}}N$. Since, among
 
 \pagebreak
 
-\chapter*{Appendix A: Resources}
-[\textit{Report the config files of the software used (i.e. SU2 \cite{economon2015su2} and the mesher). Also attach to this report an archive with the mesh files, solutions and the reference solution data (e.g. data points of a Cp plot ...)}]
-\section*{Mesh configuration files}
-\section*{SU2 configuration files}
+\chapter*{Appendix A: Souce Code}
+\section*{main.cpp}
+\section*{SkipList.hpp}
+\section*{SkipList.cpp}
+\pagebreak
+
+\chapter*{Declare}
+\textit{We hereby declare that all the work done in this project titled "Skip List" is of our independent effort as a group.}
 % \section{Reference solution data}
 
 
