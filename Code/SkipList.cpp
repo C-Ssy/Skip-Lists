@@ -42,7 +42,7 @@ unsigned int SkipList::RandomLevel() const
     return level;
 }
 
-bool SkipList::InsertKey(int key, int value)
+void SkipList::InsertKey(int key, int value)
 {
     Node *currentNode = header;
     Node **update = new Node *[maxLevel + 1];
@@ -55,16 +55,14 @@ bool SkipList::InsertKey(int key, int value)
         }
         update[i] = currentNode;
     }
-    /* reached level 0 and forward pointer to
-       right, which is desired position to
-       insert key.
-    */
+
+    // 找到唯一有可能的节点
     currentNode = currentNode->forward[0];
+
     // 如果节点不存在或节点的 key 值不对
-    if (!currentNode or currentNode->key != key)
+    if (currentNode == nullptr or currentNode->key != key)
     {
         unsigned int randomLevel = RandomLevel();
-        // std::cout << randomLevel;
         if (randomLevel > currentLevel)
         {
             for (unsigned int i = currentLevel + 1; i < randomLevel + 1; i++)
@@ -82,11 +80,9 @@ bool SkipList::InsertKey(int key, int value)
             update[i]->forward[i] = newNode;
         }
         delete[]update;
-        return true;
+        return;
     }
-    // currentNode->value = value;
-
-    return false;
+    currentNode->value = value;
 }
 
 bool SkipList::FindKey(int key)
@@ -123,7 +119,7 @@ bool SkipList::DeleteKey(int key)
     currentNode = currentNode->forward[0];
 
     // 如果目前的节点就是目标节点
-    if (currentNode and currentNode->key == key)
+    if (currentNode != nullptr and currentNode->key == key)
     {
         for (unsigned int i = 0; i <= currentLevel; ++i)
         {

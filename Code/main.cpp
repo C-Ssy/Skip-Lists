@@ -7,6 +7,7 @@ int main()
     sl.InsertKey(2, 5);
     sl.InsertKey(4, 7);
     sl.InsertKey(1, 3);
+    sl.InsertKey(1, 5);
     sl.PrintSkipList();
     std::cout << sl.FindKey(4) << sl.DeleteKey(4) << sl.FindKey(4);
 

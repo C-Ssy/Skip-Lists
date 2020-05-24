@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+#include <array>
 
 class Node
 {
@@ -43,7 +44,7 @@ private:
 public:
     explicit SkipList(int maxLevel = 32, float p = 0.25);
 
-    bool InsertKey(int key, int value);
+    void InsertKey(int key, int value);
 
     bool FindKey(int key);
 
