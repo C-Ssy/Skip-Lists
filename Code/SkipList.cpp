@@ -1,39 +1,60 @@
 #include "SkipList.hpp"
 
+/**
+ *
+ * @param key: the key of the Node
+ * @param value: the value of the Node
+ * @param level: the level of the Node
+ */
 Node::Node(int key, int value, unsigned int level)
 {
     this->key = key;
     this->value = value;
     this->level = level;
     this->forward = new Node *[level + 1];
-    memset(forward, 0, sizeof(Node *) * (level + 1));
-    // std::fill(forward[0], forward[0] + (level + 1)*1, nullptr);
+    // Initialize forward
+    for (int i = 0; i < level + 1; ++i)
+    {
+        forward[i] = nullptr;
+    }
 }
 
+/**
+ *
+ */
 Node::~Node()
 {
-    // delete forward
+    // Delete forward
     delete[] forward;
 }
 
+/**
+ *
+ * @param maxLevel: the max level of a skip list
+ * @param p: the probability
+ */
 SkipList::SkipList(int maxLevel, float p)
 {
     this->maxLevel = maxLevel;
     this->p = p;
-    currentLevel = 0;
+    currentLevel = 0; // there is no current level
     header = new Node(-1, 0, maxLevel);
 }
 
+/**
+ *
+ * @return a generated random level
+ */
 unsigned int SkipList::RandomLevel() const
 {
-    // 产生 0 - 1 的随机浮点数
+    // generate a float in [0, 1)
     std::random_device rd;
     std::mt19937 mt(rd());
     std::uniform_real_distribution<float> dist(0.0, 1.0);
 
-
     float r = dist(mt);
     unsigned int level;
+    // When r < p and level < maxLevel, generate a new random float in [0,1)
     for (level = 0; r < p && level < maxLevel; ++level)
     {
         r = dist(mt);
@@ -42,6 +63,11 @@ unsigned int SkipList::RandomLevel() const
     return level;
 }
 
+/**
+ *
+ * @param key: the key we want to insert
+ * @param value: the value we want to insert or update
+ */
 void SkipList::InsertKey(int key, int value)
 {
     Node *currentNode = header;
@@ -56,10 +82,10 @@ void SkipList::InsertKey(int key, int value)
         update[i] = currentNode;
     }
 
-    // 找到唯一有可能的节点
+    // Find the only possible Node
     currentNode = currentNode->forward[0];
 
-    // 如果节点不存在或节点的 key 值不对
+    // is the only possible Node is null, or its key is not correct
     if (currentNode == nullptr or currentNode->key != key)
     {
         unsigned int randomLevel = RandomLevel();
@@ -73,6 +99,7 @@ void SkipList::InsertKey(int key, int value)
             currentLevel = randomLevel;
         }
         Node *newNode = new Node(key, value, randomLevel);
+
         // insert node by rearranging pointers
         for (unsigned int i = 0; i <= randomLevel; i++)
         {
@@ -85,26 +112,37 @@ void SkipList::InsertKey(int key, int value)
     currentNode->value = value;
 }
 
+/**
+ *
+ * @param key: the key we want to find
+ * @return whether there is such a Node
+ */
 bool SkipList::FindKey(int key)
 {
     Node *currentNode = header;
     for (unsigned int i = currentLevel; i != 0xFFFFFFFF; --i)
     {
-        // 下一个节点的值小于待寻找的key，则继续前进
+        // If next Node's key < current Node, keep moving forward
         while (currentNode->forward[i] and currentNode->forward[i]->key < key)
         {
             currentNode = currentNode->forward[i];
         }
     }
 
-    // final 为唯一有可能的节点
+    // Find the only possible Node
     currentNode = currentNode->forward[0];
-
+    // return whether the Node is correct
     return currentNode and currentNode->key == key;
 }
 
+/**
+ *
+ * @param key: the key we want to delete
+ * @return whether there is such a Node
+ */
 bool SkipList::DeleteKey(int key)
 {
+    // The same process as InsertKey
     Node *currentNode = header;
     Node **update = new Node *[currentLevel + 1];
     for (unsigned int i = currentLevel; i != 0xFFFFFFFF; --i)
@@ -118,7 +156,7 @@ bool SkipList::DeleteKey(int key)
     }
     currentNode = currentNode->forward[0];
 
-    // 如果目前的节点就是目标节点
+    // If the Node is the Node that we want to delete
     if (currentNode != nullptr and currentNode->key == key)
     {
         for (unsigned int i = 0; i <= currentLevel; ++i)
@@ -137,6 +175,9 @@ bool SkipList::DeleteKey(int key)
     return false;
 }
 
+/**
+ *
+ */
 void SkipList::PrintSkipList()
 {
     for (Node *currentNode = header;
